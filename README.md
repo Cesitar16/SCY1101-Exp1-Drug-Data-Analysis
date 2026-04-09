@@ -35,9 +35,20 @@ medicine-analysis/
 |       `-- medicine_exploded.csv
 |
 |-- notebooks/
-|   |-- 01_eda_inicial.ipynb
-|   |-- 02_limpieza_transformacion.ipynb
-|   `-- 03_analisis_segmentacion.ipynb
+|   |-- general/
+|   |   `-- 01_eda_inicial.ipynb
+|   |-- enfoque_01_combinaciones_componentes/
+|   |   |-- 01_eda_combinaciones_componentes.ipynb
+|   |   |-- 02_limpieza_transformacion_combinaciones_componentes.ipynb
+|   |   `-- 03_analisis_combinaciones_componentes.ipynb
+|   |-- enfoque_02_comparacion_empresas/
+|   |   |-- 01_eda_comparacion_empresas.ipynb
+|   |   |-- 02_limpieza_transformacion_comparacion_empresas.ipynb
+|   |   `-- 03_analisis_comparacion_empresas.ipynb
+|   `-- enfoque_03_efectos_secundarios_componentes/
+|       |-- 01_eda_efectos_secundarios_componentes.ipynb
+|       |-- 02_limpieza_transformacion_efectos_secundarios_componentes.ipynb
+|       `-- 03_analisis_efectos_secundarios_componentes.ipynb
 |
 |-- src/
 |   |-- __init__.py
@@ -57,17 +68,19 @@ medicine-analysis/
 |   `-- decisiones_limpieza.md
 |
 |-- README.md
+|-- pyproject.toml
 |-- requirements.txt
 `-- main.py
 ```
 
 ## Estado actual
 
-Actualmente el proyecto tiene operativo el flujo de carga de datos y el notebook de EDA inicial:
+Actualmente el proyecto tiene operativo el flujo de carga de datos y una organizacion de notebooks separada por enfoque:
 
 - `src/load_data.py` descarga el dataset si hace falta y carga `Medicine_Details.csv`;
-- `notebooks/01_eda_inicial.ipynb` contiene la estructura base del analisis exploratorio inicial;
-- `cleaning.py`, `transform.py`, `validation.py`, `analysis.py`, `main.py` y los notebooks 02 y 03 estan reservados para las siguientes etapas.
+- `notebooks/general/01_eda_inicial.ipynb` contiene el EDA transversal del dataset completo;
+- cada enfoque dentro de `notebooks/` tiene su propia secuencia `EDA -> limpieza/transformacion -> analisis`;
+- `cleaning.py`, `transform.py`, `validation.py`, `analysis.py` y `main.py` siguen reservados para las siguientes etapas.
 
 ## Requisitos
 
@@ -98,6 +111,18 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+### 3. Instalar el proyecto en modo editable
+
+Este paso permite usar imports directos como `from src.load_data import load_medicine_data` incluso desde notebooks ubicados dentro de subcarpetas.
+
+```powershell
+pip install -e .
+```
+
+### 4. Seleccionar el kernel correcto en Jupyter o VS Code
+
+Si trabajas con notebooks, asegurate de usar el interprete de `.venv` como kernel. Eso evita errores de importacion y garantiza que las dependencias instaladas en el proyecto esten disponibles dentro del notebook.
+
 ## Descarga y carga de datos
 
 El archivo [src/load_data.py](src/load_data.py) permite:
@@ -122,6 +147,14 @@ df = load_medicine_data(download_if_missing=True)
 print(df.head())
 ```
 
+### Uso desde notebooks
+
+Despues de ejecutar `pip install -e .`, los notebooks pueden importar directamente:
+
+```python
+from src.load_data import load_medicine_data
+```
+
 ### Nota sobre Kaggle
 
 Si es la primera vez que usas `kagglehub`, puede que necesites autenticar tu acceso a Kaggle en tu entorno local. Si ya tienes el archivo `Medicine_Details.csv` dentro de `data/raw/`, puedes trabajar directamente sin volver a descargarlo.
@@ -132,11 +165,11 @@ Si es la primera vez que usas `kagglehub`, puede que necesites autenticar tu acc
 
 Verificar que el archivo quede disponible en `data/raw/Medicine_Details.csv`.
 
-### 2. Ejecutar el EDA inicial
+### 2. Ejecutar el EDA general
 
 Abrir:
 
-- `notebooks/01_eda_inicial.ipynb`
+- `notebooks/general/01_eda_inicial.ipynb`
 
 Este notebook esta pensado para:
 
@@ -145,17 +178,28 @@ Este notebook esta pensado para:
 - inspeccionar columnas clave como `Composition`, `Uses`, `Side_effects` y `Manufacturer`;
 - dejar registradas decisiones preliminares de limpieza.
 
-### 3. Continuar con limpieza y transformacion
+### 3. Elegir un enfoque de trabajo
 
-Siguientes notebooks previstos:
+El proyecto ahora separa el trabajo en tres enfoques:
 
-- `notebooks/02_limpieza_transformacion.ipynb`
-- `notebooks/03_analisis_segmentacion.ipynb`
+- `notebooks/enfoque_01_combinaciones_componentes/`
+- `notebooks/enfoque_02_comparacion_empresas/`
+- `notebooks/enfoque_03_efectos_secundarios_componentes/`
+
+Dentro de cada carpeta se sigue el orden:
+
+- `01_eda_...`
+- `02_limpieza_transformacion_...`
+- `03_analisis_...`
 
 ## Archivos importantes
 
 - `src/load_data.py`: descarga y carga del dataset principal.
-- `notebooks/01_eda_inicial.ipynb`: analisis exploratorio inicial.
+- `pyproject.toml`: configuracion para instalar el proyecto en modo editable.
+- `notebooks/general/01_eda_inicial.ipynb`: analisis exploratorio general.
+- `notebooks/enfoque_01_combinaciones_componentes/`: flujo del enfoque de composiciones.
+- `notebooks/enfoque_02_comparacion_empresas/`: flujo del enfoque por fabricante.
+- `notebooks/enfoque_03_efectos_secundarios_componentes/`: flujo del enfoque de efectos secundarios.
 - `data/raw/`: datos originales.
 - `data/processed/`: datos procesados generados durante el proyecto.
 - `outputs/`: figuras, tablas y reportes exportados.

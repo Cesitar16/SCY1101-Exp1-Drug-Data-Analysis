@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medicine-analysis"
+version = "0.1.0"
+description = "Analisis exploratorio y preparacion de datos de medicamentos."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "kagglehub",
+    "numpy",
+    "matplotlib",
+    "ipykernel",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
