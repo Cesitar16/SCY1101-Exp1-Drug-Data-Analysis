@@ -96,13 +96,16 @@ def verificar_checksum(
 
     Returns:
         Diccionario con el resultado de la verificación:
-        {
-            "archivo": str,
-            "md5": str,
-            "tamanio_bytes": int,
-            "coincide": bool | None,
-            "estado": str
-        }
+
+        .. code-block:: python
+
+           {
+               "archivo": str,
+               "md5": str,
+               "tamanio_bytes": int,
+               "coincide": bool | None,
+               "estado": str,
+           }
     """
     ruta = Path(ruta)
     md5_actual = calcular_md5(ruta)
@@ -153,13 +156,16 @@ def validar_esquema(df: pd.DataFrame, esperado: dict[str, str] = ESQUEMA_ESPERAD
 
     Returns:
         Diccionario con resultados:
-        {
-            "columnas_ok": list[str],
-            "columnas_faltantes": list[str],
-            "columnas_extra": list[str],
-            "tipos_incorrectos": dict,
-            "esquema_valido": bool
-        }
+
+        .. code-block:: python
+
+           {
+               "columnas_ok": list[str],
+               "columnas_faltantes": list[str],
+               "columnas_extra": list[str],
+               "tipos_incorrectos": dict,
+               "esquema_valido": bool,
+           }
     """
     columnas_reales = set(df.columns)
     columnas_esperadas = set(esperado.keys())
@@ -220,16 +226,19 @@ def comparar_shapes(df_raw: pd.DataFrame, df_clean: pd.DataFrame) -> dict:
 
     Returns:
         Diccionario con métricas de transformación:
-        {
-            "filas_raw": int,
-            "filas_clean": int,
-            "filas_eliminadas": int,
-            "porcentaje_eliminado": float,
-            "columnas_raw": int,
-            "columnas_clean": int,
-            "columnas_añadidas": int,
-            "columnas_nuevas": list[str]
-        }
+
+        .. code-block:: python
+
+           {
+               "filas_raw": int,
+               "filas_clean": int,
+               "filas_eliminadas": int,
+               "porcentaje_eliminado": float,
+               "columnas_raw": int,
+               "columnas_clean": int,
+               "columnas_añadidas": int,
+               "columnas_nuevas": list[str],
+           }
     """
     filas_raw = len(df_raw)
     filas_clean = len(df_clean)

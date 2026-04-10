@@ -66,7 +66,7 @@ def explotar_componentes(df: pd.DataFrame) -> pd.DataFrame:
 
     despues = len(df_exploded)
     print(f'[explotar_componentes] Filas antes: {antes} -> después: {despues}')
-    print(f'[explotar_componentes] Componentes únicos: {df_exploded['component'].nunique()}')
+    print(f"[explotar_componentes] Componentes únicos: {df_exploded['component'].nunique()}")
 
     return df_exploded
 
