@@ -199,10 +199,62 @@ def plot_componentes_por_diversidad_efectos(
 # Gráfico 3: Heatmap del crosstab normalizado (componente × efecto)
 # ---------------------------------------------------------------------------
 
+
+def _ordenar_filas_heatmap(
+    matriz: pd.DataFrame,
+    estrategia: str = "max_intensity",
+) -> pd.DataFrame:
+    """
+    Reordena las filas de una matriz de asociación normalizada para mejorar
+    la narrativa visual del heatmap.
+
+    Args:
+        matriz: Submatriz normalizada (filas = componentes, columnas = efectos).
+        estrategia: Criterio de ordenamiento.
+            - "max_intensity": ordena por el valor máximo de cada fila.
+              Pone arriba los componentes con asociaciones más fuertes.
+            - "entropy": ordena por entropía de Shannon. Pone arriba los
+              perfiles más concentrados (baja entropía) y abajo los más
+              dispersos (alta entropía).
+
+    Returns:
+        Matriz con las filas reordenadas según la estrategia.
+
+    Raises:
+        ValueError: Si la estrategia no es reconocida.
+    """
+    estrategias_validas = {"max_intensity", "entropy"}
+    if estrategia not in estrategias_validas:
+        raise ValueError(
+            f"Estrategia '{estrategia}' no reconocida. "
+            f"Opciones válidas: {sorted(estrategias_validas)}"
+        )
+
+    try:
+        if estrategia == "max_intensity":
+            scores = matriz.max(axis=1)
+            indice_ordenado = scores.sort_values(ascending=False).index
+        else:  # entropy
+            # Entropía de Shannon: -sum(p * log(p))
+            # Baja entropía = perfil concentrado, alta entropía = disperso
+            matriz_segura = matriz.replace(0, np.nan)
+            scores = -(matriz_segura * np.log(matriz_segura)).sum(axis=1)
+            # Concentrados arriba → orden ascendente de entropía
+            indice_ordenado = scores.sort_values(ascending=True).index
+
+        return matriz.loc[indice_ordenado]
+
+    except Exception as exc:
+        raise RuntimeError(
+            f"Error al ordenar la matriz con estrategia '{estrategia}': {exc}"
+        ) from exc
+
+
 def plot_heatmap_componente_efecto(
     crosstab_norm: pd.DataFrame,
     top_n_componentes: int = 20,
     top_n_efectos: int = 20,
+    estrategia_orden: str = "max_intensity",
 ) -> None:
     """
     Genera un heatmap de la tabla normalizada componente × efecto.
@@ -211,23 +263,45 @@ def plot_heatmap_componente_efecto(
     que tienen el efecto j. Al estar normalizado por fila, permite comparar
     patrones entre componentes independientemente de su frecuencia total.
 
+    La selección de los top componentes se hace por frecuencia (suma de
+    proporciones), pero el orden visual se reorganiza según `estrategia_orden`
+    para que los componentes con asociaciones más fuertes aparezcan arriba.
+
     Args:
         crosstab_norm: Tabla normalizada por fila generada por `normalizar_crosstab`.
         top_n_componentes: Número de componentes más frecuentes a mostrar.
-            Se seleccionan los que tienen mayor suma de proporciones.
         top_n_efectos: Número de efectos a mostrar en el eje X.
+        estrategia_orden: Cómo ordenar las filas del heatmap.
+            - "max_intensity" (default): los componentes con asociaciones
+              más intensas aparecen arriba (ej: simethicone, tetanus toxoid).
+            - "entropy": los componentes con perfiles más concentrados
+              aparecen arriba; los más dispersos abajo.
 
     Raises:
-        ValueError: Si crosstab_norm está vacía.
+        ValueError: Si crosstab_norm está vacía o la estrategia es inválida.
     """
     if crosstab_norm.empty:
         raise ValueError("crosstab_norm está vacía.")
 
-    # Seleccionar top componentes y efectos por suma de proporciones
-    top_comp = crosstab_norm.sum(axis=1).sort_values(ascending=False).head(top_n_componentes).index
-    top_efec = crosstab_norm.sum(axis=0).sort_values(ascending=False).head(top_n_efectos).index
+    # 1. Selección por frecuencia (mantiene los componentes/efectos relevantes)
+    top_comp = (
+        crosstab_norm.sum(axis=1)
+        .sort_values(ascending=False)
+        .head(top_n_componentes)
+        .index
+    )
+    top_efec = (
+        crosstab_norm.sum(axis=0)
+        .sort_values(ascending=False)
+        .head(top_n_efectos)
+        .index
+    )
     submatriz = crosstab_norm.loc[top_comp, top_efec]
 
+    # 2. Reordenamiento visual por intensidad o entropía
+    submatriz = _ordenar_filas_heatmap(submatriz, estrategia=estrategia_orden)
+
+    # 3. Render
     fig, ax = plt.subplots(figsize=(15, 10))
 
     sns.heatmap(
@@ -239,9 +313,15 @@ def plot_heatmap_componente_efecto(
         ax=ax,
         cbar_kws={"label": "Proporción relativa al componente"},
     )
+
+    titulo_orden = {
+        "max_intensity": "ordenado por intensidad máxima",
+        "entropy": "ordenado por entropía (concentrados arriba)",
+    }[estrategia_orden]
+
     ax.set_title(
         f"Asociación componente → efecto secundario (normalizado por fila)\n"
-        f"(Top {top_n_componentes} componentes | Top {top_n_efectos} efectos)",
+        f"(Top {top_n_componentes} componentes | Top {top_n_efectos} efectos | {titulo_orden})",
         fontweight="bold",
         pad=15,
     )
@@ -250,7 +330,7 @@ def plot_heatmap_componente_efecto(
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
 
-    _guardar_figura(fig, "e03_heatmap_componente_efecto_norm")
+    _guardar_figura(fig, f"e03_heatmap_componente_efecto_norm_{estrategia_orden}")
 
 
 # ---------------------------------------------------------------------------
