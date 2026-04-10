@@ -3,3 +3,5 @@ kagglehub
 numpy
 matplotlib
 ipykernel
+seaborn
+networkx
