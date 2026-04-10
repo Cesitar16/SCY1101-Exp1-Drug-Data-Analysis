@@ -4,3 +4,5 @@ numpy
 matplotlib
 ipykernel
 scikit-learn
+seaborn
+networkx
