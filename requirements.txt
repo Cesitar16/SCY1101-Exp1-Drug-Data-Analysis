@@ -1,6 +1,6 @@
 pandas
 kagglehub
-numpy
+numpy<2
 matplotlib
 ipykernel
 scikit-learn
