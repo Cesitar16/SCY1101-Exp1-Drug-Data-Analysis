@@ -28,6 +28,11 @@ from .transform import (
     explode_therapeutic_areas,
 )
 from .validation import full_quality_report, validate_review_percentages
+from .pipeline import (
+    run_company_analysis_pipeline,
+    run_company_comparison_pipeline,
+    run_company_transform_pipeline,
+)
 
 __all__ = [
     "COMPANY_COMPARISON_CLEAN_PATH",
@@ -51,6 +56,9 @@ __all__ = [
     "plot_specialization_heatmap",
     "plot_top_manufacturers",
     "quality_quantity_balance",
+    "run_company_analysis_pipeline",
+    "run_company_comparison_pipeline",
+    "run_company_transform_pipeline",
     "top_medicines_by_manufacturer",
     "validate_review_percentages",
 ]
