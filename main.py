@@ -4,7 +4,7 @@ Punto de entrada principal del proyecto SCY1101 - Análisis de Medicamentos.
 Orquesta los pipelines de los tres enfoques del equipo:
     - Enfoque 01: Combinaciones de Componentes (activo)
     - Enfoque 02: Por implementar
-    - Enfoque 03: Por implementar
+    - Enfoque 03: Efectos Secundarios por Componentes (activo)
 
 Uso desde terminal:
     python main.py                    # ejecuta todos los enfoques activos
@@ -187,34 +187,69 @@ def ejecutar_enfoque_02(df_raw) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Enfoque 03 — Por implementar (placeholder para compañero)
+# Enfoque 03 — Efectos Secundarios por Componentes
 # ---------------------------------------------------------------------------
 
 
 def ejecutar_enfoque_03(df_raw) -> bool:
     """
-    Ejecuta el pipeline del Enfoque 03.
+    Ejecuta el pipeline completo del Enfoque 03: Efectos Secundarios por Componentes.
 
-    PENDIENTE: Implementar cuando el compañero tenga listo su módulo en
-    src/enfoque_03_<nombre>/.
-
-    Para activar este enfoque:
-        1. Crear src/enfoque_03_<nombre>/ con su __init__.py
-        2. Implementar run_cleaning_pipeline, run_transform_pipeline,
-           run_validation_pipeline y run_analysis_pipeline.
-        3. Reemplazar el contenido de esta función con las llamadas
-           correspondientes, siguiendo el mismo patrón del Enfoque 01.
+    Pasos:
+        1. Limpieza y generación de columnas derivadas (componentes, efectos, anomalías).
+        2. Transformaciones: explode a nivel componente × efecto, crosstab y normalización.
+        3. Validación de integridad del pipeline.
+        4. Análisis y generación de visualizaciones.
 
     Args:
         df_raw: DataFrame raw cargado por cargar_datos().
 
     Returns:
-        False mientras no esté implementado.
+        True si el pipeline completó sin errores, False si falló.
     """
-    _seccion("ENFOQUE 03 — (Pendiente de implementación)")
-    print("  ⏳ Este enfoque aún no está disponible.")
-    print("  ⏳ Implementar en src/enfoque_03_<nombre>/")
-    return False
+    _seccion("ENFOQUE 03 — Efectos Secundarios por Componentes")
+
+    try:
+        # --- Limpieza ---
+        print("\n  [1/4] Ejecutando pipeline de limpieza...")
+        from src.enfoque_03_efectos_secundarios_componentes.cleaning import (
+            run_cleaning_pipeline,
+        )
+        df_clean = run_cleaning_pipeline(df_raw, save=True)
+        _ok(f"Limpieza completada: {df_clean.shape[0]:,} filas")
+
+        # --- Transformaciones ---
+        print("\n  [2/4] Ejecutando pipeline de transformaciones...")
+        from src.enfoque_03_efectos_secundarios_componentes.transform import (
+            run_transform_pipeline,
+        )
+        df_long, crosstab, crosstab_norm = run_transform_pipeline(
+            df_clean, min_observaciones=5, top_n_efectos=30, save=True
+        )
+        _ok(f"Transformaciones completadas: {df_long.shape[0]:,} pares componente×efecto")
+
+        # --- Validación ---
+        print("\n  [3/4] Ejecutando pipeline de validación...")
+        from src.enfoque_03_efectos_secundarios_componentes.validation import (
+            run_validation_pipeline,
+        )
+        reporte = run_validation_pipeline(df_raw, df_clean)
+        estado_esquema = "válido" if reporte["esquema"]["esquema_valido"] else "inválido"
+        _ok(f"Validación completada: esquema {estado_esquema}")
+
+        # --- Análisis ---
+        print("\n  [4/4] Ejecutando pipeline de análisis...")
+        from src.enfoque_03_efectos_secundarios_componentes.analysis import (
+            run_analysis_pipeline,
+        )
+        run_analysis_pipeline(df_clean, df_long, crosstab, crosstab_norm)
+        _ok("Análisis completado: 6 gráficos generados en outputs/figures/")
+
+        return True
+
+    except Exception as exc:
+        _error(f"Enfoque 03 falló: {exc}")
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -233,9 +268,9 @@ ENFOQUES: dict[int, dict] = {
         "activo": False,
     },
     3: {
-        "nombre": "Enfoque 03 (pendiente)",
+        "nombre": "Efectos Secundarios por Componentes",
         "funcion": ejecutar_enfoque_03,
-        "activo": False,
+        "activo": True,
     },
 }
 
