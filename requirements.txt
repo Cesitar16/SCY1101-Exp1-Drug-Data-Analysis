@@ -3,3 +3,4 @@ kagglehub
 numpy
 matplotlib
 ipykernel
+scikit-learn
