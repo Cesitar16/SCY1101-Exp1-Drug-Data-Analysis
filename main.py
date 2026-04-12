@@ -162,28 +162,33 @@ def ejecutar_enfoque_01(df_raw) -> bool:
 
 def ejecutar_enfoque_02(df_raw) -> bool:
     """
-    Ejecuta el pipeline del Enfoque 02.
+    Ejecuta el pipeline completo del Enfoque 02: Comparación de Empresas.
 
-    PENDIENTE: Implementar cuando el compañero tenga listo su módulo en
-    src/enfoque_02_<nombre>/.
-
-    Para activar este enfoque:
-        1. Crear src/enfoque_02_<nombre>/ con su __init__.py
-        2. Implementar run_cleaning_pipeline, run_transform_pipeline,
-           run_validation_pipeline y run_analysis_pipeline.
-        3. Reemplazar el contenido de esta función con las llamadas
-           correspondientes, siguiendo el mismo patrón del Enfoque 01.
+    Delega en run_company_comparison_pipeline, que internamente ejecuta
+    limpieza, transformaciones, validación y análisis.
 
     Args:
         df_raw: DataFrame raw cargado por cargar_datos().
 
     Returns:
-        False mientras no esté implementado.
+        True si el pipeline completó sin errores, False si falló.
     """
-    _seccion("ENFOQUE 02 — (Pendiente de implementación)")
-    print("  ⏳ Este enfoque aún no está disponible.")
-    print("  ⏳ Implementar en src/enfoque_02_<nombre>/")
-    return False
+    _seccion("ENFOQUE 02 — Comparación de Empresas")
+
+    try:
+        from src.enfoque_02_comparacion_empresas.pipeline import (
+            run_company_comparison_pipeline,
+        )
+        resultado = run_company_comparison_pipeline(df_raw)
+        n_figuras = 6  # top_manufacturers, reputation_ranking, review_balance,
+                       # quality_vs_quantity, correlation, specialization_heatmap
+        _ok(f"Pipeline completado: datos limpios {resultado['df_clean'].shape[0]:,} filas")
+        _ok(f"Análisis completado: {n_figuras} gráficos generados en outputs/figures/")
+        return True
+
+    except Exception as exc:
+        _error(f"Enfoque 02 falló: {exc}")
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -263,9 +268,9 @@ ENFOQUES: dict[int, dict] = {
         "activo": True,
     },
     2: {
-        "nombre": "Enfoque 02 (pendiente)",
+        "nombre": "Comparación de Empresas",
         "funcion": ejecutar_enfoque_02,
-        "activo": False,
+        "activo": True,
     },
     3: {
         "nombre": "Efectos Secundarios por Componentes",
